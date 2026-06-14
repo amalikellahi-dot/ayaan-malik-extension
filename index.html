@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>LeetCode Focus Timer</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      font-family: Inter, system-ui, sans-serif;
+      background: #070816;
+      color: #e2e8f0;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+      background: radial-gradient(circle at top left, rgba(99, 102, 241, 0.18), transparent 25%),
+                  radial-gradient(circle at bottom right, rgba(236, 72, 153, 0.16), transparent 28%),
+                  linear-gradient(180deg, #05070f 0%, #0c1320 100%);
+    }
+
+    .card {
+      width: min(100%, 980px);
+      background: rgba(10, 14, 28, 0.95);
+      border: 1px solid rgba(148, 163, 184, 0.14);
+      border-radius: 28px;
+      box-shadow: 0 30px 80px rgba(0, 0, 0, 0.35);
+      padding: 36px;
+      overflow: hidden;
+    }
+
+    .header {
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+      margin-bottom: 32px;
+    }
+
+    h1 {
+      font-size: clamp(2rem, 3vw, 3.4rem);
+      letter-spacing: -0.05em;
+      color: #f8fafc;
+    }
+
+    p {
+      color: #cbd5e1;
+      line-height: 1.8;
+      max-width: 780px;
+    }
+
+    .layout {
+      display: grid;
+      gap: 24px;
+    }
+
+    .panel {
+      background: rgba(15, 22, 44, 0.95);
+      border: 1px solid rgba(148, 163, 184, 0.1);
+      border-radius: 22px;
+      padding: 28px;
+    }
+
+    .timer {
+      font-size: clamp(3.5rem, 7vw, 6rem);
+      font-weight: 800;
+      text-align: center;
+      color: #f8fafc;
+      margin-bottom: 18px;
+    }
+
+    .status {
+      text-align: center;
+      margin-bottom: 24px;
+      color: #94a3b8;
+    }
+
+    .button-row,
+    .links-grid {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 14px;
+      justify-content: center;
+    }
+
+    .btn,
+    .site-btn {
+      border: none;
+      border-radius: 14px;
+      padding: 14px 22px;
+      font-size: 0.98rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: transform 0.18s ease, opacity 0.18s ease, background-color 0.18s ease;
+      min-width: 130px;
+      text-align: center;
+    }
+
+    .btn:hover,
+    .site-btn:hover {
+      transform: translateY(-2px);
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, #6366f1, #ec4899);
+      color: #f8fafc;
+    }
+
+    .btn-secondary {
+      background: rgba(148, 163, 184, 0.12);
+      color: #e2e8f0;
+      border: 1px solid rgba(148, 163, 184, 0.16);
+    }
+
+    .btn-disabled,
+    .site-btn.locked {
+      opacity: 0.42;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .links-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap: 14px;
+      margin-top: 18px;
+    }
+
+    .warning {
+      margin-top: 18px;
+      padding: 18px 20px;
+      border-radius: 18px;
+      background: rgba(248, 113, 113, 0.12);
+      border: 1px solid rgba(248, 113, 113, 0.2);
+      color: #fecaca;
+      line-height: 1.6;
+    }
+
+    .note {
+      color: #94a3b8;
+      text-align: center;
+      margin-top: 16px;
+    }
+
+    .shake {
+      animation: shake 0.24s ease;
+    }
+
+    @keyframes shake {
+      0%, 100% { transform: translateX(0); }
+      25% { transform: translateX(-6px); }
+      75% { transform: translateX(6px); }
+    }
+
+    @media (min-width: 820px) {
+      .layout {
+        grid-template-columns: 1.2fr 0.8fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <div class="header">
+      <h1>LeetCode Focus Timer</h1>
+      <p>Use this built-in timer to commit to a full 15-minute LeetCode session before opening distraction websites like YouTube, TikTok, Instagram, or any other social site.</p>
+    </div>
+
+    <div class="layout">
+      <section class="panel">
+        <div class="timer" id="timerDisplay">15:00</div>
+        <div class="status" id="statusText">Press Start to begin your focus session.</div>
+        <div class="button-row">
+          <button class="btn btn-primary" id="startBtn">Start</button>
+          <button class="btn btn-secondary btn-disabled" id="pauseBtn" disabled>Pause</button>
+          <button class="btn btn-secondary" id="resetBtn">Reset</button>
+        </div>
+        <div class="button-row" style="margin-top: 18px;">
+          <button class="btn btn-primary" id="openLeetBtn">Open LeetCode</button>
+        </div>
+        <p class="note">Only LeetCode is allowed while the timer is active. The blocked website buttons below unlock when the countdown reaches zero.</p>
+      </section>
+
+      <section class="panel">
+        <h2 style="font-size:1.4rem; text-align:center; margin-bottom:18px; color:#f8fafc;">Blocked Sites</h2>
+        <p style="text-align:center; color:#cbd5e1; margin-bottom:16px;">These sites are intentionally blocked until your 15-minute focus session completes.</p>
+        <div class="links-grid" id="linksGrid">
+          <button class="site-btn btn-secondary locked" data-url="https://www.youtube.com">YouTube</button>
+          <button class="site-btn btn-secondary locked" data-url="https://www.tiktok.com">TikTok</button>
+          <button class="site-btn btn-secondary locked" data-url="https://www.instagram.com">Instagram</button>
+          <button class="site-btn btn-secondary locked" data-url="https://www.reddit.com">Reddit</button>
+          <button class="site-btn btn-secondary locked" data-url="https://www.facebook.com">Facebook</button>
+          <button class="site-btn btn-secondary locked" data-url="https://twitter.com">Twitter</button>
+          <button class="site-btn btn-secondary locked" data-url="https://www.crunchyroll.com">Crunchyroll</button>
+        </div>
+        <div class="warning">Distractions stay locked during the active countdown. Only after the timer ends will these buttons become enabled.</div>
+      </section>
+    </div>
+  </div>
+
+  <script>
+    const TIMER_SECONDS = 15 * 60;
+    const timerDisplay = document.getElementById('timerDisplay');
+    const statusText = document.getElementById('statusText');
+    const startBtn = document.getElementById('startBtn');
+    const pauseBtn = document.getElementById('pauseBtn');
+    const resetBtn = document.getElementById('resetBtn');
+    const openLeetBtn = document.getElementById('openLeetBtn');
+    const siteButtons = Array.from(document.querySelectorAll('.site-btn'));
+
+    let remainingSeconds = TIMER_SECONDS;
+    let intervalId = null;
+    let endTime = null;
+
+    function formatTime(seconds) {
+      const m = Math.floor(seconds / 60).toString().padStart(2, '0');
+      const s = Math.floor(seconds % 60).toString().padStart(2, '0');
+      return `${m}:${s}`;
+    }
+
+    function lockSites() {
+      siteButtons.forEach(btn => {
+        btn.classList.add('locked');
+        btn.disabled = true;
+      });
+    }
+
+    function unlockSites() {
+      siteButtons.forEach(btn => {
+        btn.classList.remove('locked');
+        btn.disabled = false;
+      });
+    }
+
+    function updateControls() {
+      pauseBtn.disabled = intervalId === null;
+      pauseBtn.classList.toggle('btn-disabled', intervalId === null);
+      startBtn.textContent = intervalId ? 'Running' : remainingSeconds === 0 ? 'Restart' : 'Start';
+    }
+
+    function updateDisplay() {
+      timerDisplay.textContent = formatTime(remainingSeconds);
+      if (remainingSeconds <= 0) {
+        statusText.textContent = 'Excellent job — your 15-minute focus session is complete!';
+        unlockSites();
+      } else if (intervalId) {
+        statusText.textContent = 'Focus session active. Keep working on LeetCode.';
+      } else {
+        statusText.textContent = remainingSeconds === TIMER_SECONDS ? 'Press Start to begin your focus session.' : 'Paused. Resume when you are ready.';
+      }
+      updateControls();
+    }
+
+    function saveState() {
+      localStorage.setItem('leetcodeFocus', JSON.stringify({
+        remainingSeconds,
+        endTime: endTime ? endTime.toISOString() : null,
+        running: !!intervalId
+      }));
+    }
+
+    function loadState() {
+      const raw = localStorage.getItem('leetcodeFocus');
+      if (!raw) return;
+      try {
+        const data = JSON.parse(raw);
+        if (typeof data.remainingSeconds === 'number') {
+          remainingSeconds = data.remainingSeconds;
+          if (data.endTime && data.running) {
+            const future = new Date(data.endTime);
+            const now = new Date();
+            if (future > now) {
+              remainingSeconds = Math.max(0, Math.round((future - now) / 1000));
+              startTimer(true);
+            } else {
+              remainingSeconds = 0;
+            }
+          }
+        }
+      } catch (err) {
+        console.warn('Unable to restore timer state.', err);
+      }
+    }
+
+    function startTimer(resuming = false) {
+      if (intervalId) return;
+      if (remainingSeconds <= 0) {
+        remainingSeconds = TIMER_SECONDS;
+      }
+      endTime = new Date(Date.now() + remainingSeconds * 1000);
+      intervalId = setInterval(() => {
+        const now = new Date();
+        remainingSeconds = Math.max(0, Math.round((endTime - now) / 1000));
+        updateDisplay();
+        saveState();
+        if (remainingSeconds <= 0) {
+          clearInterval(intervalId);
+          intervalId = null;
+          endTime = null;
+          updateDisplay();
+          saveState();
+        }
+      }, 250);
+      lockSites();
+      if (!resuming) saveState();
+      updateDisplay();
+    }
+
+    function pauseTimer() {
+      if (!intervalId) return;
+      clearInterval(intervalId);
+      intervalId = null;
+      endTime = null;
+      updateDisplay();
+      saveState();
+    }
+
+    function resetTimer() {
+      clearInterval(intervalId);
+      intervalId = null;
+      remainingSeconds = TIMER_SECONDS;
+      endTime = null;
+      lockSites();
+      updateDisplay();
+      saveState();
+    }
+
+    startBtn.addEventListener('click', () => startTimer());
+    pauseBtn.addEventListener('click', pauseTimer);
+    resetBtn.addEventListener('click', resetTimer);
+    openLeetBtn.addEventListener('click', () => window.open('https://leetcode.com', '_blank'));
+
+    siteButtons.forEach(button => {
+      button.addEventListener('click', () => {
+        if (remainingSeconds > 0 && intervalId) {
+          statusText.textContent = 'Wait for your focus session to finish before opening distractions.';
+          button.classList.add('shake');
+          setTimeout(() => button.classList.remove('shake'), 260);
+          return;
+        }
+        window.open(button.dataset.url, '_blank');
+      });
+    });
+
+    window.addEventListener('beforeunload', saveState);
+    loadState();
+    if (remainingSeconds > 0 && !intervalId) {
+      lockSites();
+    }
+    updateDisplay();
+  </script>
+</body>
+</html>
