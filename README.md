@@ -1,2 +1,2 @@
 # ayaan-malik-extension
-An extension built without getting distracted to doomscroll or waste time on any websites until doing 15 minutes of leetcode.
+This is effectively a focused browser blocker tailored for coding practice time, with a 15-minute “do not distract” timer and support for keeping the timer state even if Chrome is shut down.
